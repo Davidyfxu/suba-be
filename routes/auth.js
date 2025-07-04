@@ -11,7 +11,7 @@ async function authRoutes(fastify, options) {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -19,6 +19,11 @@ async function authRoutes(fastify, options) {
       if (error) {
         return reply.code(400).send({ error: error.message });
       }
+
+      const { data } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       return {
         message: "Registration successful",
