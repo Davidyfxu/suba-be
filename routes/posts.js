@@ -4,10 +4,12 @@ import { requireAuth } from "../middleware/auth.js";
 async function postsRoutes(fastify, options) {
   // Create a post
   fastify.post("/", { preHandler: requireAuth }, async (request, reply) => {
-    const { title, content } = request.body;
+    const { title, content, idea_flash_id } = request.body;
 
-    if (!title || !content) {
-      return reply.code(400).send({ error: "Title and content are required" });
+    if (!title || !content || !idea_flash_id) {
+      return reply
+        .code(400)
+        .send({ error: "Title, content and idea_flash_id are required" });
     }
 
     try {
@@ -17,6 +19,7 @@ async function postsRoutes(fastify, options) {
           {
             title,
             content,
+            idea_flash_id,
             user_id: request.user.id,
             created_at: new Date().toISOString(),
           },
@@ -59,7 +62,7 @@ async function postsRoutes(fastify, options) {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("id", id)
+        .eq("idea_flash_id", id)
         .single();
 
       if (error) {
@@ -84,8 +87,8 @@ async function postsRoutes(fastify, options) {
     const { data, error } = await supabase
       .from("posts")
       .update({ title, content, updated_at: new Date().toISOString() })
-      .eq("id", id)
       .eq("user_id", request.user.id)
+      .eq("idea_flash_id", id)
       .select();
     try {
       if (error) {
@@ -115,10 +118,9 @@ async function postsRoutes(fastify, options) {
         const { data, error } = await supabase
           .from("posts")
           .delete()
-          .eq("id", id)
+          .eq("idea_flash_id", id)
           .eq("user_id", request.user.id)
           .select();
-
         if (error) {
           return reply.code(400).send({ error: error.message });
         }
